@@ -40,10 +40,12 @@ object Main extends LazyLogging {
 
     val futureBinding = connectionSource.to(Sink.foreachAsync(parallelism = 16) { connection =>
       try {
-        Future(connection.handleWithAsyncHandler(requestHandler))
+        // Future(connection.handleWithAsyncHandler(requestHandler))
+        // SOLUTION:
+        Future.successful(connection.handleWithAsyncHandler(requestHandler))
       } catch {
         case e: Throwable => logger.error(e.getMessage, e)
-        Future(HttpResponse(status = StatusCodes.InternalServerError))
+          Future(HttpResponse(status = StatusCodes.InternalServerError))
       }
     }).run()
 
@@ -58,13 +60,13 @@ object Main extends LazyLogging {
   }
 
   def requestHandler(request: HttpRequest) : Future[HttpResponse] = {
-    Future{
-      blocking {
-        logger.info("Request received")
-        Thread.sleep(1000)
-        logger.info("Response sent")
-        HttpResponse(status = StatusCodes.OK)
-      }
-    }
+    Future.successful(myCode(request))
+  }
+
+  def myCode(request: HttpRequest) : HttpResponse = {
+    logger.info("Request received")
+    Thread.sleep(1000)
+    logger.info("Response sent")
+    HttpResponse(status = StatusCodes.OK)
   }
 }
